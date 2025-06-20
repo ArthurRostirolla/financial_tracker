@@ -1,21 +1,68 @@
+import { useState } from 'react';
+import { useRouter } from 'next/router';
 import Layout from '../components/layout';
+import Modal from '../components/Modal';
+import ContaForm from '../components/ContaForm';
+import pool from '../lib/db';
 
-// Dados de exemplo. Você deve buscar isso via getServerSideProps.
-const contas = [
-  { id: 1, nome: 'Carteira', tipo: 'Dinheiro', saldo_inicial: 150.75 },
-  { id: 2, nome: 'Banco Principal', tipo: 'Conta Corrente', saldo_inicial: 2500.00 },
-  { id: 3, nome: 'Cartão de Crédito', tipo: 'Crédito', saldo_inicial: 0 },
-];
+export default function ContasPage({ contas, serverError }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [contaToEdit, setContaToEdit] = useState(null);
+  const router = useRouter();
 
-export default function ContasPage() {
+  const openModal = () => setIsModalOpen(true);
+  
+  const closeModal = () => {
+    setContaToEdit(null);
+    setIsModalOpen(false);
+  };
+  
+  const refreshData = () => {
+    router.replace(router.asPath);
+    closeModal();
+  };
+
+  const handleEdit = (conta) => {
+    setContaToEdit(conta);
+    openModal();
+  };
+  
+  const handleDelete = async (id) => {
+    if (window.confirm('Tem certeza que deseja excluir esta conta? Isso pode afetar receitas e despesas associadas.')) {
+      const response = await fetch(`/api/contas?id=${id}`, { method: 'DELETE' });
+      if (response.ok) {
+        refreshData();
+      } else {
+        alert('Falha ao excluir a conta.');
+      }
+    }
+  };
+
+  const handleDuplicate = (conta) => {
+    const { id, ...contaData } = conta;
+    setContaToEdit(contaData);
+    openModal();
+  };
+
+  if (serverError) {
+    return <Layout><p className="text-red-500">{serverError}</p></Layout>;
+  }
+  
   return (
     <Layout>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-text-light dark:text-text-dark">Minhas Contas</h1>
-        <button className="px-4 py-2 bg-sidebar-light text-white rounded-lg shadow hover:bg-opacity-90">
+        <h1 className="text-2xl font-bold">Minhas Contas</h1>
+        <button onClick={openModal} className="px-4 py-2 bg-sidebar-light text-white rounded-lg shadow hover:bg-opacity-90">
           Adicionar Conta
         </button>
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={closeModal} title={contaToEdit ? 'Editar Conta' : 'Nova Conta'}>
+        <ContaForm
+          onSuccess={refreshData}
+          contaToEdit={contaToEdit}
+        />
+      </Modal>
 
       <div className="overflow-x-auto bg-card-light dark:bg-card-dark rounded-lg shadow">
         <table className="min-w-full">
@@ -32,10 +79,11 @@ export default function ContasPage() {
               <tr key={conta.id}>
                 <td className="px-6 py-4 whitespace-nowrap">{conta.nome}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{conta.tipo}</td>
-                <td className="px-6 py-4 whitespace-nowrap">R$ {conta.saldo_inicial.toFixed(2)}</td>
+                <td className="px-6 py-4 whitespace-nowrap">R$ {parseFloat(conta.saldo_inicial).toFixed(2)}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <a href="#" className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-200 mr-4">Editar</a>
-                  <a href="#" className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200">Excluir</a>
+                  <button onClick={() => handleDuplicate(conta)} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 mr-4">Duplicar</button>
+                  <button onClick={() => handleEdit(conta)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 mr-4">Editar</button>
+                  <button onClick={() => handleDelete(conta.id)} className="text-red-600 hover:text-red-900 dark:text-red-400">Excluir</button>
                 </td>
               </tr>
             ))}
@@ -45,28 +93,22 @@ export default function ContasPage() {
     </Layout>
   );
 }
-// Essa função roda NO SERVIDOR a cada requisição
+
 export async function getServerSideProps() {
-  // A lógica de busca de dados que estava no useEffect vem para cá.
-  // Como isso roda no servidor, podemos até mesmo chamar a lógica do banco diretamente,
-  // mas vamos continuar usando a API por enquanto para manter a separação.
-  const res = await fetch('http://localhost:3000/api/despesas'); // Use a URL completa no servidor
-  const despesas = await res.json();
-
-  const grouped = {};
-  despesas.forEach(i => {
-    grouped[i.categoria] = (grouped[i.categoria] || 0) + parseFloat(i.valor);
-  });
-
-  const dadosDoGrafico = {
-    labels: Object.keys(grouped),
-    datasets: [{ data: Object.values(grouped) }],
-  };
-
-  // O que for retornado em props, será passado para o componente da página
-  return {
-    props: {
-      dadosDoGrafico,
-    },
-  };
+  try {
+    const [contas] = await pool.query('SELECT * FROM contas ORDER BY nome');
+    return {
+      props: {
+        contas: JSON.parse(JSON.stringify(contas)) // Serializa os dados
+      },
+    };
+  } catch (error) {
+    console.error("Erro no getServerSideProps de Contas:", error);
+    return {
+      props: {
+        serverError: 'Não foi possível conectar ao banco de dados.',
+        contas: []
+      },
+    };
+  }
 }

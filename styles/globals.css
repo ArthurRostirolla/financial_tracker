@@ -3,11 +3,26 @@
 @tailwind utilities;
 
 body {
-  @apply bg-background-light text-text-light;
+  /* A transição suave ainda é útil */
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Quando a classe .dark está no <html> ou <body> */
-.dark body {
-  @apply bg-background-dark text-text-dark;
+/* O resto dos estilos pode ser removido daqui, pois serão controlados pelo layout */
+
+/* Estilo para a scrollbar (opcional, mas melhora a estética) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #a0a0a0;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #4f4f4f;
 }

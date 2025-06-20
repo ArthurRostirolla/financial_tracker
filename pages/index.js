@@ -1,82 +1,119 @@
+import { useState } from 'react';
+import { useRouter } from 'next/router';
 import Layout from '../components/layout';
+import Modal from '../components/Modal';
+import DespesaForm from '../components/DespesaForm';
+import ReceitaForm from '../components/ReceitaForm';
+import ContaForm from '../components/ContaForm';
 import { Pie } from 'react-chartjs-2';
 import { Chart, ArcElement, Tooltip, Legend } from 'chart.js';
+import pool from '../lib/db';
 
-// Supondo que você criou esses componentes de formulário
-// import DespesaForm from '../components/DespesaForm';
-// import ReceitaForm from '../components/ReceitaForm';
-// import ContaForm from '../components/ContaForm';
+Chart.register(ArcElement, Tooltip, Legend);
 
+export default function Home({ chartData, serverError, categorias, contas }) {
+  const [modalType, setModalType] = useState(null); // 'despesa', 'receita', 'conta'
+  const router = useRouter();
 
-// Dados de exemplo para o gráfico. Você deve usar getServerSideProps para buscar dados reais.
-const exampleChartData = {
-  labels: ['Alimentação', 'Transporte', 'Moradia', 'Lazer'],
-  datasets: [
-    {
-      label: 'Despesas do Último Mês',
-      data: [1200, 500, 1800, 350],
-      backgroundColor: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0'],
-    },
-  ],
-};
+  const closeModal = () => setModalType(null);
+  const refreshData = () => {
+    router.replace(router.asPath);
+    closeModal();
+  };
 
-export default function Home() {
-  Chart.register(ArcElement, Tooltip, Legend);
+  if (serverError) {
+    return <Layout><p className="text-red-500">{serverError}</p></Layout>;
+  }
 
   return (
     <Layout>
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Seção Principal - Dashboard */}
         <div className="lg:col-span-2">
-          <h1 className="text-2xl font-bold text-text-light dark:text-text-dark mb-4">Dashboard Mensal</h1>
+          <h1 className="text-2xl font-bold mb-4">Dashboard Mensal</h1>
           <div className="p-4 bg-card-light dark:bg-card-dark rounded-lg shadow">
-            <Pie data={exampleChartData} />
+            {chartData.datasets[0].data.length > 0 ? (
+              <Pie data={chartData} options={{ responsive: true }} />
+            ) : (
+              <p className='text-center p-8'>Não há dados de despesas para exibir.</p>
+            )}
           </div>
         </div>
 
-        {/* Seção de Ações Rápidas */}
         <div>
-          <h2 className="text-xl font-bold text-text-light dark:text-text-dark mb-4">Ações Rápidas</h2>
+          <h2 className="text-xl font-bold mb-4">Ações Rápidas</h2>
           <div className="space-y-4">
-            <button className="w-full p-4 text-left bg-sidebar-light text-white rounded-lg shadow hover:bg-opacity-90">
+            <button onClick={() => setModalType('receita')} className="w-full p-4 text-left bg-sidebar-light text-white rounded-lg shadow hover:bg-opacity-90">
                 Cadastrar Nova Receita
             </button>
-            <button className="w-full p-4 text-left bg-sidebar-light text-white rounded-lg shadow hover:bg-opacity-90">
+            <button onClick={() => setModalType('despesa')} className="w-full p-4 text-left bg-sidebar-light text-white rounded-lg shadow hover:bg-opacity-90">
                 Cadastrar Nova Despesa
             </button>
-            <button className="w-full p-4 text-left bg-sidebar-light text-white rounded-lg shadow hover:bg-opacity-90">
+            <button onClick={() => setModalType('conta')} className="w-full p-4 text-left bg-sidebar-light text-white rounded-lg shadow hover:bg-opacity-90">
                 Cadastrar Nova Conta
             </button>
           </div>
         </div>
       </div>
+      
+      {/* Modals */}
+      <Modal isOpen={modalType === 'despesa'} onClose={closeModal} title="Nova Despesa">
+        <DespesaForm onSuccess={refreshData} categorias={categorias.filter(c => c.tipo === 'despesa')} contas={contas} />
+      </Modal>
+      <Modal isOpen={modalType === 'receita'} onClose={closeModal} title="Nova Receita">
+        <ReceitaForm onSuccess={refreshData} categorias={categorias.filter(c => c.tipo === 'receita')} contas={contas} />
+      </Modal>
+      <Modal isOpen={modalType === 'conta'} onClose={closeModal} title="Nova Conta">
+        <ContaForm onSuccess={refreshData} />
+      </Modal>
     </Layout>
   );
 }
 
-
-// Essa função roda NO SERVIDOR a cada requisição
 export async function getServerSideProps() {
-  // A lógica de busca de dados que estava no useEffect vem para cá.
-  // Como isso roda no servidor, podemos até mesmo chamar a lógica do banco diretamente,
-  // mas vamos continuar usando a API por enquanto para manter a separação.
-  const res = await fetch('http://localhost:3000/api/despesas'); // Use a URL completa no servidor
-  const despesas = await res.json();
+  try {
+    const [despesas] = await pool.query(`
+      SELECT c.nome as categoria, d.valor 
+      FROM despesas d 
+      JOIN categorias c ON d.categoria_id = c.id
+      WHERE d.data_despesa >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+    `);
 
-  const grouped = {};
-  despesas.forEach(i => {
-    grouped[i.categoria] = (grouped[i.categoria] || 0) + parseFloat(i.valor);
-  });
+    const [categorias] = await pool.query('SELECT * FROM categorias ORDER BY nome');
+    const [contas] = await pool.query('SELECT * FROM contas ORDER BY nome');
 
-  const dadosDoGrafico = {
-    labels: Object.keys(grouped),
-    datasets: [{ data: Object.values(grouped) }],
-  };
+    const grouped = {};
+    despesas.forEach(d => {
+      grouped[d.categoria] = (grouped[d.categoria] || 0) + parseFloat(d.valor);
+    });
 
-  // O que for retornado em props, será passado para o componente da página
-  return {
-    props: {
-      dadosDoGrafico,
-    },
-  };
+    const backgroundColors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40'];
+
+    const chartData = {
+      labels: Object.keys(grouped),
+      datasets: [{
+        label: 'Despesas do Último Mês',
+        data: Object.values(grouped),
+        backgroundColor: backgroundColors.slice(0, Object.keys(grouped).length),
+      }],
+    };
+
+    return {
+      props: {
+        chartData,
+        // CORREÇÃO: Serializando os dados para evitar o erro de Date object.
+        categorias: JSON.parse(JSON.stringify(categorias)),
+        contas: JSON.parse(JSON.stringify(contas)),
+      },
+    };
+  } catch (error) {
+    console.error("Erro no getServerSideProps da Home:", error);
+    return {
+      props: {
+        serverError: 'Não foi possível conectar ao banco de dados.',
+        chartData: { labels: [], datasets: [{ data: [] }] },
+        categorias: [],
+        contas: [],
+      },
+    };
+  }
 }
