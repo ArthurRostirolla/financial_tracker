@@ -1,5 +1,6 @@
+// tailwind.config.mjs
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+const config = {
   darkMode: 'class',
   content: [
     './pages/**/*.{js,ts,jsx,tsx}',
@@ -8,14 +9,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Cores do Modo Claro
+        // Suas cores aqui...
         'sidebar-light': '#63783d',
-        'background-light': '#fdfaf5', // Tom de areia/off-white
+        'background-light': '#fdfaf5',
         'card-light': '#ffffff',
         'text-light': '#171717',
         'text-on-sidebar': '#ffffff',
-
-        // Cores do Modo Escuro
         'sidebar-dark': '#2a3b2a',
         'background-dark': '#1c1c1c',
         'card-dark': '#242424',
@@ -25,3 +24,5 @@ module.exports = {
   },
   plugins: [],
 };
+
+export default config;
