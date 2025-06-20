@@ -1,51 +1,60 @@
-import pool from '../../lib/db';
+// pages/api/contas.js
+import { getAllContas, createConta, updateConta, deleteContaById } from '../../lib/services/contas.service';
 
 async function handleGet(req, res) {
-  const [rows] = await pool.query(
-    'SELECT * FROM contas ORDER BY nome'
-  );
-  return res.status(200).json(rows);
+  try {
+    const contas = await getAllContas();
+    return res.status(200).json(contas);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 }
 
 async function handlePost(req, res) {
-  const { nome, tipo, saldo_inicial } = req.body;
-  await pool.query(
-    'INSERT INTO contas (nome,tipo,saldo_inicial) VALUES (?,?,?)',
-    [nome, tipo, saldo_inicial]
-  );
-  return res.status(201).json({ message: 'Conta criada' });
+  try {
+    await createConta(req.body);
+    return res.status(201).json({ message: 'Conta criada com sucesso' });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 }
 
 async function handlePut(req, res) {
-  const { id, nome, tipo, saldo_inicial } = req.body;
-  await pool.query(
-    'UPDATE contas SET nome=?, tipo=?, saldo_inicial=? WHERE id=?',
-    [nome, tipo, saldo_inicial, id]
-  );
-  return res.status(200).json({ message: 'Conta atualizada' });
+  try {
+    const { id } = req.query; // Pega o ID da query string
+    await updateConta(id, req.body);
+    return res.status(200).json({ message: 'Conta atualizada com sucesso' });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 }
 
 async function handleDelete(req, res) {
-  const { id } = req.body;
-  await pool.query('DELETE FROM contas WHERE id=?', [id]);
-  return res.status(200).json({ message: 'Conta excluída' });
+  try {
+    const { id } = req.query; // Pega o ID da query string
+    await deleteContaById(id);
+    return res.status(200).json({ message: 'Conta excluída com sucesso' });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 }
 
 export default async function handler(req, res) {
   const { method } = req;
-
-  const handlers = {
-    GET: handleGet,
-    POST: handlePost,
-    PUT: handlePut,
-    DELETE: handleDelete,
-  };
-
-  const handle = handlers[method];
-
-  if (handle) {
-    return handle(req, res);
+  switch (method) {
+    case 'GET':
+      return handleGet(req, res);
+    case 'POST':
+      return handlePost(req, res);
+    case 'PUT':
+      // No seu formulário, você já passa o ID na URL para PUT.
+      // Ex: /api/contas?id=CONTA_ID
+      // A correção para DELETE também deve usar req.query
+      return handlePut(req, res); 
+    case 'DELETE':
+      return handleDelete(req, res);
+    default:
+      res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
+      res.status(405).end(`Method ${method} Not Allowed`);
   }
-
-  res.setHeader('Allow', Object.keys(handlers)).status(405).end(`Method ${method} Not Allowed`);
 }

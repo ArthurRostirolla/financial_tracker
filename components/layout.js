@@ -1,15 +1,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+// Importe os ícones diretamente do phosphor-react
+import { HouseLine, Cardholder, ArrowFatLinesUp, ArrowFatLinesDown, Article } from 'phosphor-react';
 
-// Importe os ícones
-import HomeIcon from './icons/HomeIcon';
-import ContaIcon from './icons/ContaIcon';
-import ReceitaIcon from './icons/ReceitaIcon';
-import DespesaIcon from './icons/DespesaIcon';
-import RelatorioIcon from './icons/RelatorioIcon';
-
-// Componente para alternar o tema (sem alterações)
 const ThemeSwitcher = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
@@ -39,13 +33,13 @@ const ThemeSwitcher = () => {
   );
 };
 
-
+// Array de navegação com os componentes de ícone referenciados diretamente
 const navigation = [
-  { name: 'Home', href: '/', icon: HomeIcon },
-  { name: 'Contas', href: '/contas', icon: ContaIcon },
-  { name: 'Receitas', href: '/receitas', icon: ReceitaIcon },
-  { name: 'Despesas', href: '/despesas', icon: DespesaIcon },
-  { name: 'Relatórios', href: '/relatorios', icon: RelatorioIcon },
+  { name: 'Home', href: '/', icon: HouseLine },
+  { name: 'Contas', href: '/contas', icon: Cardholder },
+  { name: 'Receitas', href: '/receitas', icon: ArrowFatLinesDown },
+  { name: 'Despesas', href: '/despesas', icon: ArrowFatLinesUp },
+  { name: 'Relatórios', href: '/relatorios', icon: Article },
 ];
 
 function classNames(...classes) {
@@ -58,32 +52,35 @@ export default function Layout({ children }) {
 
   const NavLinks = () => (
     <nav className="flex-1 space-y-1 px-2 py-4">
-      {navigation.map((item) => (
-        <Link
-          key={item.name}
-          href={item.href}
-          className={classNames(
-            router.pathname === item.href
-              ? 'bg-white/20 text-white'
-              : 'text-white/70 hover:bg-white/10 hover:text-white',
-            'group flex items-center rounded-md px-2 py-2 text-sm font-medium'
-          )}
-        >
-          <item.icon
+      {navigation.map((item) => {
+        // Renomeie 'item.icon' para 'Icon' com a primeira letra maiúscula para que o JSX o trate como um componente.
+        const Icon = item.icon; 
+        return (
+          <Link
+            key={item.name}
+            href={item.href}
             className={classNames(
-              router.pathname === item.href ? 'text-white' : 'text-white/70 group-hover:text-white',
-              'mr-3 h-6 w-6 flex-shrink-0'
+              router.pathname === item.href
+                ? 'bg-white/20 text-white'
+                : 'text-white/70 hover:bg-white/10 hover:text-white',
+              'group flex items-center rounded-md px-2 py-2 text-sm font-medium'
             )}
-            aria-hidden="true"
-          />
-          {item.name}
-        </Link>
-      ))}
+          >
+            <Icon // Renderize o componente Icon aqui
+              className={classNames(
+                router.pathname === item.href ? 'text-white' : 'text-white/70 group-hover:text-white',
+                'mr-3 h-6 w-6 flex-shrink-0'
+              )}
+              aria-hidden="true"
+            />
+            {item.name}
+          </Link>
+        );
+      })}
     </nav>
   );
 
   return (
-    //  CORREÇÃO APLICADA AQUI v
     <div className="flex h-screen overflow-hidden bg-background-light text-text-light dark:bg-background-dark dark:text-text-dark">
       {/* Sidebar para Desktop */}
       <aside className="hidden md:flex md:flex-shrink-0">

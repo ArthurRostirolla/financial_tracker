@@ -4,6 +4,9 @@ import Layout from '../components/layout';
 import Modal from '../components/Modal';
 import ReceitaForm from '../components/ReceitaForm';
 import pool from '../lib/db';
+import { getAllReceitas } from '../lib/services/receitas.service';
+import { getCategoriasPorTipo } from '../lib/services/categorias.service'; 
+import { getAllContas } from '../lib/services/contas.service';
 
 export default function ReceitasPage({ receitas, categorias, contas, serverError }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -100,26 +103,17 @@ export default function ReceitasPage({ receitas, categorias, contas, serverError
   );
 }
 
+
 export async function getServerSideProps() {
   try {
-    const [receitas] = await pool.query(
-      `SELECT r.*, c.nome AS categoria_nome, ct.nome as conta_nome
-       FROM receitas r 
-       LEFT JOIN categorias c ON r.categoria_id = c.id
-       LEFT JOIN contas ct ON r.conta_id = ct.id
-       ORDER BY data_receita DESC`
-    );
-    const [categorias] = await pool.query('SELECT * FROM categorias WHERE tipo="receita" ORDER BY nome');
-    const [contas] = await pool.query('SELECT * FROM contas ORDER BY nome');
-
-    const serializableReceitas = receitas.map(r => ({
-      ...r,
-      data_receita: r.data_receita.toISOString().split('T')[0],
-    }));
+    // Agora as chamadas são para os serviços, tornando a lógica mais limpa
+    const receitas = await getAllReceitas();
+    const categorias = await getCategoriasPorTipo('receita');
+    const contas = await getAllContas();
 
     return {
       props: {
-        receitas: serializableReceitas,
+        receitas, // Já vem serializada do serviço
         categorias,
         contas,
       },

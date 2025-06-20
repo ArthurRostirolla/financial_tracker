@@ -2,6 +2,7 @@ import Layout from '../components/layout';
 import { Bar } from 'react-chartjs-2';
 import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import pool from '../lib/db';
+import { getSaldoTotal, getUltimaDespesa, getGastosUltimos6Meses } from '../lib/services/reports.service';
 
 Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -42,51 +43,14 @@ export default function RelatoriosPage({ serverError, saldoTotal, ultimaDespesa,
 
 export async function getServerSideProps() {
   try {
-    // 1. Saldo Total
-    const [saldos] = await pool.query(`
-      SELECT 
-        (SELECT SUM(saldo_inicial) FROM contas) + 
-        (SELECT SUM(valor) FROM receitas) - 
-        (SELECT SUM(valor) FROM despesas) as saldo
-    `);
-    const saldoTotal = saldos[0].saldo || 0;
-
-    // 2. Última despesa
-    const [despesas] = await pool.query('SELECT * FROM despesas ORDER BY data_despesa DESC, id DESC LIMIT 1');
-    const ultimaDespesa = despesas[0] || null;
-
-    // 3. Gastos Mensais
-    const [gastos] = await pool.query(`
-      SELECT DATE_FORMAT(data_despesa, '%Y-%m') as mes, SUM(valor) as total
-      FROM despesas
-      WHERE data_despesa >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-      GROUP BY mes
-      ORDER BY mes ASC
-    `);
-
-    const labels = [];
-    const data = [];
-    const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-    
-    gastos.forEach(g => {
-      const [year, month] = g.mes.split('-');
-      labels.push(`${monthNames[parseInt(month) - 1]}/${year.slice(2)}`);
-      data.push(g.total);
-    });
-
-    const gastosMensaisData = {
-      labels,
-      datasets: [{
-        label: 'Gastos por Mês',
-        data,
-        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-      }],
-    };
+    const saldoTotal = await getSaldoTotal();
+    const ultimaDespesa = await getUltimaDespesa();
+    const gastosMensaisData = await getGastosUltimos6Meses();
 
     return {
       props: {
-        saldoTotal: parseFloat(saldoTotal),
-        ultimaDespesa: ultimaDespesa ? JSON.parse(JSON.stringify(ultimaDespesa)) : null,
+        saldoTotal,
+        ultimaDespesa,
         gastosMensaisData,
       }
     };

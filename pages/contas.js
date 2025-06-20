@@ -4,6 +4,7 @@ import Layout from '../components/layout';
 import Modal from '../components/Modal';
 import ContaForm from '../components/ContaForm';
 import pool from '../lib/db';
+import { getAllContas } from '../lib/services/contas.service';
 
 export default function ContasPage({ contas, serverError }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -96,10 +97,10 @@ export default function ContasPage({ contas, serverError }) {
 
 export async function getServerSideProps() {
   try {
-    const [contas] = await pool.query('SELECT * FROM contas ORDER BY nome');
+    const contas = await getAllContas(); // Chama a função do serviço
     return {
       props: {
-        contas: JSON.parse(JSON.stringify(contas)) // Serializa os dados
+        contas, // Já vem serializado do serviço
       },
     };
   } catch (error) {

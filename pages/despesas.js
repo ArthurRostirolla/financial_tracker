@@ -4,6 +4,9 @@ import Layout from '../components/layout';
 import Modal from '../components/Modal';
 import DespesaForm from '../components/DespesaForm';
 import pool from '../lib/db';
+import { getAllDespesas } from '../lib/services/despesas.service';
+import { getCategoriasPorTipo } from '../lib/services/categorias.service';
+import { getAllContas } from '../lib/services/contas.service';
 
 export default function DespesasPage({ despesas, categorias, contas, serverError }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -101,26 +104,17 @@ export default function DespesasPage({ despesas, categorias, contas, serverError
   );
 }
 
+// pages/despesas.js
+
 export async function getServerSideProps() {
   try {
-    const [despesas] = await pool.query(
-      `SELECT d.*, c.nome AS categoria_nome, ct.nome as conta_nome 
-       FROM despesas d 
-       LEFT JOIN categorias c ON d.categoria_id = c.id
-       LEFT JOIN contas ct ON d.conta_id = ct.id
-       ORDER BY data_despesa DESC`
-    );
-    const [categorias] = await pool.query('SELECT * FROM categorias WHERE tipo="despesa" ORDER BY nome');
-    const [contas] = await pool.query('SELECT * FROM contas ORDER BY nome');
-
-    const serializableDespesas = despesas.map(d => ({
-      ...d,
-      data_despesa: d.data_despesa.toISOString().split('T')[0],
-    }));
+    const despesas = await getAllDespesas();
+    const categorias = await getCategoriasPorTipo('despesa');
+    const contas = await getAllContas();
 
     return {
       props: {
-        despesas: serializableDespesas,
+        despesas,
         categorias,
         contas,
       },

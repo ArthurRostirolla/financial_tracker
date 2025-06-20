@@ -8,6 +8,9 @@ import ContaForm from '../components/ContaForm';
 import { Pie } from 'react-chartjs-2';
 import { Chart, ArcElement, Tooltip, Legend } from 'chart.js';
 import pool from '../lib/db';
+import { getDespesasAgrupadasUltimoMes } from '../lib/services/reports.service';
+import { getAllCategorias } from '../lib/services/categorias.service';
+import { getAllContas } from '../lib/services/contas.service';
 
 Chart.register(ArcElement, Tooltip, Legend);
 
@@ -71,38 +74,15 @@ export default function Home({ chartData, serverError, categorias, contas }) {
 
 export async function getServerSideProps() {
   try {
-    const [despesas] = await pool.query(`
-      SELECT c.nome as categoria, d.valor 
-      FROM despesas d 
-      JOIN categorias c ON d.categoria_id = c.id
-      WHERE d.data_despesa >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
-    `);
-
-    const [categorias] = await pool.query('SELECT * FROM categorias ORDER BY nome');
-    const [contas] = await pool.query('SELECT * FROM contas ORDER BY nome');
-
-    const grouped = {};
-    despesas.forEach(d => {
-      grouped[d.categoria] = (grouped[d.categoria] || 0) + parseFloat(d.valor);
-    });
-
-    const backgroundColors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40'];
-
-    const chartData = {
-      labels: Object.keys(grouped),
-      datasets: [{
-        label: 'Despesas do Último Mês',
-        data: Object.values(grouped),
-        backgroundColor: backgroundColors.slice(0, Object.keys(grouped).length),
-      }],
-    };
+    const chartData = await getDespesasAgrupadasUltimoMes();
+    const categorias = await getAllCategorias();
+    const contas = await getAllContas();
 
     return {
       props: {
         chartData,
-        // CORREÇÃO: Serializando os dados para evitar o erro de Date object.
-        categorias: JSON.parse(JSON.stringify(categorias)),
-        contas: JSON.parse(JSON.stringify(contas)),
+        categorias,
+        contas,
       },
     };
   } catch (error) {
