@@ -1,26 +1,59 @@
-// pages/index.js
 import Layout from '../components/layout';
 import { Pie } from 'react-chartjs-2';
 import { Chart, ArcElement, Tooltip, Legend } from 'chart.js';
 
-// A função da sua página agora recebe os dados via props
-export default function Home({ dadosDoGrafico }) {
+// Supondo que você criou esses componentes de formulário
+// import DespesaForm from '../components/DespesaForm';
+// import ReceitaForm from '../components/ReceitaForm';
+// import ContaForm from '../components/ContaForm';
+
+
+// Dados de exemplo para o gráfico. Você deve usar getServerSideProps para buscar dados reais.
+const exampleChartData = {
+  labels: ['Alimentação', 'Transporte', 'Moradia', 'Lazer'],
+  datasets: [
+    {
+      label: 'Despesas do Último Mês',
+      data: [1200, 500, 1800, 350],
+      backgroundColor: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0'],
+    },
+  ],
+};
+
+export default function Home() {
   Chart.register(ArcElement, Tooltip, Legend);
-  
-  // O useEffect e o useState para buscar dados não são mais necessários!
-  
+
   return (
     <Layout>
-      <h2 className="text-xl font-semibold mb-4">Despesas por Categoria</h2>
-      {/* Verifica se há dados antes de tentar renderizar o gráfico */}
-      {dadosDoGrafico.datasets[0].data.length > 0 ? (
-        <Pie data={dadosDoGrafico} />
-      ) : (
-        <p>Ainda não há despesas para exibir.</p>
-      )}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        {/* Seção Principal - Dashboard */}
+        <div className="lg:col-span-2">
+          <h1 className="text-2xl font-bold text-text-light dark:text-text-dark mb-4">Dashboard Mensal</h1>
+          <div className="p-4 bg-card-light dark:bg-card-dark rounded-lg shadow">
+            <Pie data={exampleChartData} />
+          </div>
+        </div>
+
+        {/* Seção de Ações Rápidas */}
+        <div>
+          <h2 className="text-xl font-bold text-text-light dark:text-text-dark mb-4">Ações Rápidas</h2>
+          <div className="space-y-4">
+            <button className="w-full p-4 text-left bg-sidebar-light text-white rounded-lg shadow hover:bg-opacity-90">
+                Cadastrar Nova Receita
+            </button>
+            <button className="w-full p-4 text-left bg-sidebar-light text-white rounded-lg shadow hover:bg-opacity-90">
+                Cadastrar Nova Despesa
+            </button>
+            <button className="w-full p-4 text-left bg-sidebar-light text-white rounded-lg shadow hover:bg-opacity-90">
+                Cadastrar Nova Conta
+            </button>
+          </div>
+        </div>
+      </div>
     </Layout>
   );
 }
+
 
 // Essa função roda NO SERVIDOR a cada requisição
 export async function getServerSideProps() {
