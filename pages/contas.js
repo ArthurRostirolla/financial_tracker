@@ -1,11 +1,11 @@
+// pages/contas.js
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../components/layout';
 import Modal from '../components/Modal';
 import ContaForm from '../components/ContaForm';
-import pool from '../lib/db';
 import { getAllContas } from '../lib/services/contas.service';
-import { PlusCircle, PencilSimpleLine, Trash, Folders } from 'phosphor-react';
+import { Folders, PencilSimpleLine, Trash } from 'phosphor-react';
 
 export default function ContasPage({ contas, serverError }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -13,12 +13,12 @@ export default function ContasPage({ contas, serverError }) {
   const router = useRouter();
 
   const openModal = () => setIsModalOpen(true);
-  
+
   const closeModal = () => {
     setContaToEdit(null);
     setIsModalOpen(false);
   };
-  
+
   const refreshData = () => {
     router.replace(router.asPath);
     closeModal();
@@ -28,7 +28,7 @@ export default function ContasPage({ contas, serverError }) {
     setContaToEdit(conta);
     openModal();
   };
-  
+
   const handleDelete = async (id) => {
     if (window.confirm('Tem certeza que deseja excluir esta conta? Isso pode afetar receitas e despesas associadas.')) {
       const response = await fetch(`/api/contas?id=${id}`, { method: 'DELETE' });
@@ -40,16 +40,29 @@ export default function ContasPage({ contas, serverError }) {
     }
   };
 
-  const handleDuplicate = (conta) => {
+  const handleDuplicate = async (conta) => {
     const { id, ...contaData } = conta;
-    setContaToEdit(contaData);
-    openModal();
+    // Modifica o nome para indicar que é uma cópia
+    contaData.nome = `${contaData.nome} (Cópia)`;
+    
+    const response = await fetch('/api/contas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(contaData),
+    });
+
+    if (response.ok) {
+      router.replace(router.asPath); // Atualiza a página
+    } else {
+      const errorData = await response.json();
+      alert(`Ocorreu um erro ao duplicar: ${errorData.message}`);
+    }
   };
 
   if (serverError) {
     return <Layout><p className="text-red-500">{serverError}</p></Layout>;
   }
-  
+
   return (
     <Layout>
       <div className="flex justify-between items-center mb-6">
@@ -98,10 +111,10 @@ export default function ContasPage({ contas, serverError }) {
 
 export async function getServerSideProps() {
   try {
-    const contas = await getAllContas(); // Chama a função do serviço
+    const contas = await getAllContas();
     return {
       props: {
-        contas, // Já vem serializado do serviço
+        contas,
       },
     };
   } catch (error) {

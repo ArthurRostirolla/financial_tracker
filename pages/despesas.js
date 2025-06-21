@@ -1,13 +1,13 @@
+// pages/despesas.js
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../components/layout';
 import Modal from '../components/Modal';
 import DespesaForm from '../components/DespesaForm';
-import pool from '../lib/db';
 import { getAllDespesas } from '../lib/services/despesas.service';
 import { getCategoriasPorTipo } from '../lib/services/categorias.service';
 import { getAllContas } from '../lib/services/contas.service';
-import { PlusCircle, PencilSimpleLine, Trash, Folders, Folder } from 'phosphor-react';
+import { PencilSimpleLine, Trash, Folder } from 'phosphor-react';
 
 export default function DespesasPage({ despesas, categorias, contas, serverError }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,11 +42,21 @@ export default function DespesasPage({ despesas, categorias, contas, serverError
     }
   };
 
-  // Duplicar: Pega os dados, abre o modal sem o ID
-  const handleDuplicate = (despesa) => {
+  const handleDuplicate = async (despesa) => {
     const { id, ...despesaData } = despesa;
-    setDespesaToEdit(despesaData); // Manda para o form, mas sem o ID
-    openModal();
+    
+    const response = await fetch('/api/despesas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(despesaData),
+    });
+
+    if (response.ok) {
+      router.replace(router.asPath);
+    } else {
+      const errorData = await response.json();
+      alert(`Ocorreu um erro ao duplicar: ${errorData.message}`);
+    }
   };
   
   if (serverError) {
@@ -104,8 +114,6 @@ export default function DespesasPage({ despesas, categorias, contas, serverError
     </Layout>
   );
 }
-
-// pages/despesas.js
 
 export async function getServerSideProps() {
   try {

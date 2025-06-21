@@ -1,13 +1,13 @@
+// pages/receitas.js
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../components/layout';
 import Modal from '../components/Modal';
 import ReceitaForm from '../components/ReceitaForm';
-import pool from '../lib/db';
 import { getAllReceitas } from '../lib/services/receitas.service';
 import { getCategoriasPorTipo } from '../lib/services/categorias.service'; 
 import { getAllContas } from '../lib/services/contas.service';
-import { PlusCircle, PencilSimpleLine, Trash, Folders } from 'phosphor-react';
+import { PencilSimpleLine, Trash, Folders } from 'phosphor-react';
 
 export default function ReceitasPage({ receitas, categorias, contas, serverError }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,10 +42,21 @@ export default function ReceitasPage({ receitas, categorias, contas, serverError
     }
   };
 
-  const handleDuplicate = (receita) => {
+  const handleDuplicate = async (receita) => {
     const { id, ...receitaData } = receita;
-    setReceitaToEdit(receitaData);
-    openModal();
+
+    const response = await fetch('/api/receitas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(receitaData),
+    });
+
+    if (response.ok) {
+      router.replace(router.asPath);
+    } else {
+      const errorData = await response.json();
+      alert(`Ocorreu um erro ao duplicar: ${errorData.message}`);
+    }
   };
 
   if (serverError) {
@@ -104,17 +115,15 @@ export default function ReceitasPage({ receitas, categorias, contas, serverError
   );
 }
 
-
 export async function getServerSideProps() {
   try {
-    // Agora as chamadas são para os serviços, tornando a lógica mais limpa
     const receitas = await getAllReceitas();
     const categorias = await getCategoriasPorTipo('receita');
     const contas = await getAllContas();
 
     return {
       props: {
-        receitas, // Já vem serializada do serviço
+        receitas,
         categorias,
         contas,
       },
