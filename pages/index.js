@@ -7,13 +7,12 @@ import ReceitaForm from '../components/ReceitaForm';
 import ContaForm from '../components/ContaForm';
 import { Pie, Bar } from 'react-chartjs-2';
 import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
-import { getDespesasAgrupadasUltimoMes, getSaldoTotal, getReceitasTotalMes, getDespesasTotalMes, getGastosUltimos6Meses } from '../lib/services/reports.service';
+// Alteração aqui: trocando a função importada para o gráfico de despesas
+import { getDespesasCategoriaMesAtual, getSaldoTotal, getReceitasTotalMes, getDespesasTotalMes, getGastosUltimos6Meses } from '../lib/services/reports.service';
 import { getAllCategorias } from '../lib/services/categorias.service';
 import { getAllContas } from '../lib/services/contas.service';
-// Fixed imports - using correct phosphor-react icon names
 import { Wallet, TrendUp, TrendDown, PlusCircle, MinusCircle, Bank } from 'phosphor-react';
 
-// Registra todos os componentes necessários do Chart.js
 Chart.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
 export default function Home({
@@ -52,7 +51,6 @@ export default function Home({
       {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {summaryCards.map((card, index) => {
-          // Atribuímos o componente a uma variável com letra maiúscula.
           const Icon = card.icon;
           return (
             <div key={index} className="bg-card-light dark:bg-card-dark p-6 rounded-lg shadow-md flex items-center">
@@ -135,7 +133,7 @@ export async function getServerSideProps() {
       despesasMes,
       gastosMensaisData
     ] = await Promise.all([
-      getDespesasAgrupadasUltimoMes(),
+      getDespesasCategoriaMesAtual(), // Alteração aqui: usando a nova função
       getAllCategorias(),
       getAllContas(),
       getSaldoTotal(),
