@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image'; // Importado para usar a logo
 import Head from 'next/head';   // Importado para adicionar o favicon
 import { useRouter } from 'next/router';
-import { HouseLine, Cardholder, ArrowFatLinesUp, ArrowFatLinesDown, Article } from 'phosphor-react';
+import { HouseLine, Cardholder, ArrowFatLinesUp, ArrowFatLinesDown, Article, Tag } from 'phosphor-react';
 
 const ThemeSwitcher = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -37,6 +37,7 @@ const ThemeSwitcher = () => {
 const navigation = [
   { name: 'Home', href: '/', icon: HouseLine },
   { name: 'Contas', href: '/contas', icon: Cardholder },
+  { name: 'Categorias', href: '/categorias', icon: Tag },
   { name: 'Receitas', href: '/receitas', icon: ArrowFatLinesDown },
   { name: 'Despesas', href: '/despesas', icon: ArrowFatLinesUp },
   { name: 'Relatórios', href: '/relatorios', icon: Article },

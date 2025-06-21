@@ -42,19 +42,19 @@ export default function ReceitaForm({ onSuccess, categorias, contas, receitaToEd
     }
   };
 
-  return (
+ return (
     <form onSubmit={handleSubmit} className="space-y-4 text-text-light dark:text-text-dark">
-      <input name="descricao" value={form.descricao} placeholder="Descrição (ex: Salário)" onChange={handleChange} required className="w-full p-2 border rounded bg-transparent border-gray-300 dark:border-gray-600" />
-      <input name="valor" value={form.valor} type="number" step="0.01" placeholder="Valor" onChange={handleChange} required className="w-full p-2 border rounded bg-transparent border-gray-300 dark:border-gray-600" />
-      <select name="categoria_id" value={form.categoria_id} onChange={handleChange} required className="w-full p-2 border rounded bg-transparent border-gray-300 dark:border-gray-600">
+      <input name="descricao" value={form.descricao} placeholder="Descrição (ex: Salário)" onChange={handleChange} required className="w-full p-2 border rounded bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600" />
+      <input name="valor" value={form.valor} type="number" step="0.01" placeholder="Valor" onChange={handleChange} required className="w-full p-2 border rounded bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600" />
+      <select name="categoria_id" value={form.categoria_id} onChange={handleChange} required className="w-full p-2 border rounded bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
         <option value="">Selecione a Categoria</option>
         {categorias.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
       </select>
-      <select name="conta_id" value={form.conta_id} onChange={handleChange} required className="w-full p-2 border rounded bg-transparent border-gray-300 dark:border-gray-600">
+      <select name="conta_id" value={form.conta_id} onChange={handleChange} required className="w-full p-2 border rounded bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
         <option value="">Selecione a Conta</option>
         {contas.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
       </select>
-      <input name="data_receita" value={form.data_receita} type="date" onChange={handleChange} required className="w-full p-2 border rounded bg-transparent border-gray-300 dark:border-gray-600" />
+      <input name="data_receita" value={form.data_receita} type="date" onChange={handleChange} required className="w-full p-2 border rounded bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600" />
       <button type="submit" className="w-full px-4 py-2 bg-sidebar-light text-white rounded-lg shadow hover:bg-opacity-90">
         {receitaToEdit ? 'Atualizar Receita' : 'Adicionar Receita'}
       </button>
