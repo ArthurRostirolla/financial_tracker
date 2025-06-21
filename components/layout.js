@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image'; // 1. Importar o componente Image
-import Head from 'next/head'; // 2. Importar o componente Head
+import Image from 'next/image'; // Importado para usar a logo
+import Head from 'next/head';   // Importado para adicionar o favicon
 import { useRouter } from 'next/router';
 import { HouseLine, Cardholder, ArrowFatLinesUp, ArrowFatLinesDown, Article } from 'phosphor-react';
 
@@ -81,25 +81,23 @@ export default function Layout({ children }) {
 
   return (
     <>
-      {/* 3. Adicionar as informações do Head para o favicon */}
+      {/* Bloco Head para adicionar o favicon e o título da página */}
       <Head>
         <title>FinTrack - Seu Rastreador Financeiro</title>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" href="/favicon.png" />
       </Head>
+
       <div className="flex h-screen overflow-hidden bg-background-light text-text-light dark:bg-background-dark dark:text-text-dark">
         {/* Sidebar para Desktop */}
         <aside className="hidden md:flex md:flex-shrink-0">
           <div className="flex w-64 flex-col bg-sidebar-light dark:bg-sidebar-dark">
             <div className="flex flex-shrink-0 items-center px-4 h-16">
-              {/* 4. Substituir o texto pela logo */}
+              {/* O texto "FinTrack" foi substituído pela sua logo */}
               <Image
                 src="/logo.png"
                 alt="FinTrack Logo"
-                width={140}
-                height={40}
+                width={150} 
+                height={45}
                 priority
               />
             </div>
@@ -125,12 +123,12 @@ export default function Layout({ children }) {
                 </button>
               </div>
               <div className="flex flex-shrink-0 items-center px-4 h-16">
-                {/* 5. Substituir o texto pela logo também na versão mobile */}
+                 {/* Logo também na versão mobile */}
                  <Image
                     src="/logo.png"
                     alt="FinTrack Logo"
-                    width={140}
-                    height={40}
+                    width={150}
+                    height={45}
                     priority
                   />
               </div>
