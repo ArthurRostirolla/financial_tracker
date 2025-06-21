@@ -7,6 +7,7 @@ import pool from '../lib/db';
 import { getAllDespesas } from '../lib/services/despesas.service';
 import { getCategoriasPorTipo } from '../lib/services/categorias.service';
 import { getAllContas } from '../lib/services/contas.service';
+import { PlusCircle, PencilSimpleLine, Trash, Folders, Folder } from 'phosphor-react';
 
 export default function DespesasPage({ despesas, categorias, contas, serverError }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -91,9 +92,9 @@ export default function DespesasPage({ despesas, categorias, contas, serverError
                 <td className="px-6 py-4 whitespace-nowrap">{despesa.conta_nome || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{new Date(despesa.data_despesa).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button onClick={() => handleDuplicate(despesa)} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 mr-4">Duplicar</button>
-                  <button onClick={() => handleEdit(despesa)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 mr-4">Editar</button>
-                  <button onClick={() => handleDelete(despesa.id)} className="text-red-600 hover:text-red-900 dark:text-red-400">Excluir</button>
+                  <button onClick={() => handleDuplicate(despesa)} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 mr-4"><Folder /></button>
+                  <button onClick={() => handleEdit(despesa)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 mr-4"><PencilSimpleLine /></button>
+                  <button onClick={() => handleDelete(despesa.id)} className="text-red-600 hover:text-red-900 dark:text-red-400"><Trash /></button>
                 </td>
               </tr>
             ))}

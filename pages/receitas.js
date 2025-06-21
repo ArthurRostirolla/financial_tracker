@@ -7,6 +7,7 @@ import pool from '../lib/db';
 import { getAllReceitas } from '../lib/services/receitas.service';
 import { getCategoriasPorTipo } from '../lib/services/categorias.service'; 
 import { getAllContas } from '../lib/services/contas.service';
+import { PlusCircle, PencilSimpleLine, Trash, Folders } from 'phosphor-react';
 
 export default function ReceitasPage({ receitas, categorias, contas, serverError }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -90,9 +91,9 @@ export default function ReceitasPage({ receitas, categorias, contas, serverError
                 <td className="px-6 py-4 whitespace-nowrap">{receita.conta_nome || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{new Date(receita.data_receita).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button onClick={() => handleDuplicate(receita)} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 mr-4">Duplicar</button>
-                  <button onClick={() => handleEdit(receita)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 mr-4">Editar</button>
-                  <button onClick={() => handleDelete(receita.id)} className="text-red-600 hover:text-red-900 dark:text-red-400">Excluir</button>
+                  <button onClick={() => handleDuplicate(receita)} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 mr-4"><Folders /></button>
+                  <button onClick={() => handleEdit(receita)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 mr-4"><PencilSimpleLine/></button>
+                  <button onClick={() => handleDelete(receita.id)} className="text-red-600 hover:text-red-900 dark:text-red-400"><Trash /></button>
                 </td>
               </tr>
             ))}

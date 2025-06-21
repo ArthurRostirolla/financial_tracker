@@ -5,6 +5,7 @@ import Modal from '../components/Modal';
 import ContaForm from '../components/ContaForm';
 import pool from '../lib/db';
 import { getAllContas } from '../lib/services/contas.service';
+import { PlusCircle, PencilSimpleLine, Trash, Folders } from 'phosphor-react';
 
 export default function ContasPage({ contas, serverError }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -54,7 +55,7 @@ export default function ContasPage({ contas, serverError }) {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Minhas Contas</h1>
         <button onClick={openModal} className="px-4 py-2 bg-sidebar-light text-white rounded-lg shadow hover:bg-opacity-90">
-          Adicionar Conta
+          Adicionar conta
         </button>
       </div>
 
@@ -82,9 +83,9 @@ export default function ContasPage({ contas, serverError }) {
                 <td className="px-6 py-4 whitespace-nowrap">{conta.tipo}</td>
                 <td className="px-6 py-4 whitespace-nowrap">R$ {parseFloat(conta.saldo_inicial).toFixed(2)}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button onClick={() => handleDuplicate(conta)} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 mr-4">Duplicar</button>
-                  <button onClick={() => handleEdit(conta)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 mr-4">Editar</button>
-                  <button onClick={() => handleDelete(conta.id)} className="text-red-600 hover:text-red-900 dark:text-red-400">Excluir</button>
+                  <button onClick={() => handleDuplicate(conta)} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 mr-4"><Folders /></button>
+                  <button onClick={() => handleEdit(conta)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 mr-4"><PencilSimpleLine /></button>
+                  <button onClick={() => handleDelete(conta.id)} className="text-red-600 hover:text-red-900 dark:text-red-400"><Trash /></button>
                 </td>
               </tr>
             ))}
